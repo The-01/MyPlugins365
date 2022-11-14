@@ -24,11 +24,12 @@ namespace PluginTasks
             IOrganizationServiceFactory serviceFactory = (IOrganizationServiceFactory)serviceProvider.GetService(typeof(IOrganizationServiceFactory));
             IOrganizationService service = serviceFactory.CreateOrganizationService(context.UserId);
 
-
+            // Checking the depth of plugin
             if (context.Depth > 1)
             {
                 return;
             }
+
             // The InputParameters collection contains all the data passed in the message request.
             if (context.InputParameters.Contains("Target") && context.InputParameters["Target"] is Entity)
             {
@@ -47,13 +48,14 @@ namespace PluginTasks
                         // Retrieve all status records
                         QueryExpression query = new QueryExpression(status.LogicalName);
                         query.ColumnSet = new ColumnSet(new string[] { "new_default" });
+                        query.AddOrder("createdon", OrderType.Descending);
 
                         EntityCollection collection = service.RetrieveMultiple(query);
 
                         // Check for the total number of records
                         if (collection.Entities.Count == 0)
                         {
-                            throw new InvalidPluginExecutionException("No sale product found!");
+                            throw new InvalidPluginExecutionException("No status record found!");
                         }
                         else if (collection.Entities.Count == 1)
                         {
@@ -67,17 +69,16 @@ namespace PluginTasks
                         }
                         else
                         {
-                            //foreach (var entity in collection.Entities)
-                            for (int i = collection.Entities.Count - 1; i >= 0; i--)
+                            foreach (var entity in collection.Entities)
                             {
-                                if (i == collection.Entities.Count - 1)
+                                if (entity.Id == collection.Entities[0].Id)
                                 {
-                                    if (collection.Entities[i].GetAttributeValue<bool>("new_default").Equals(true))
+                                    if (entity.GetAttributeValue<bool>("new_default").Equals(true))
                                     {
                                         statusDefault = true;
 
                                         Entity statusUpdate = new Entity(status.LogicalName);
-                                        statusUpdate.Id = collection.Entities[i].Id;
+                                        statusUpdate.Id = entity.Id;
                                         tracingService.Trace("Record id from if: " + statusUpdate.Id.ToString());
                                         statusUpdate["new_default"] = statusDefault;
 
@@ -88,8 +89,8 @@ namespace PluginTasks
                                         statusDefault = false;
 
                                         Entity statusUpdate = new Entity(status.LogicalName);
-                                        statusUpdate.Id = collection.Entities[i].Id;
-                                        tracingService.Trace("Record id from if: " + statusUpdate.Id.ToString());
+                                        statusUpdate.Id = entity.Id;
+                                        tracingService.Trace("Record id from else: " + statusUpdate.Id.ToString());
                                         statusUpdate["new_default"] = statusDefault;
 
                                         service.Update(statusUpdate);
@@ -101,13 +102,56 @@ namespace PluginTasks
                                 {
                                     statusDefault = false;
                                     Entity statusUpdate = new Entity(status.LogicalName);
-                                    statusUpdate.Id = collection.Entities[i].Id;
+                                    statusUpdate.Id = entity.Id;
                                     tracingService.Trace("Record id from else: " + statusUpdate.Id.ToString());
                                     statusUpdate["new_default"] = statusDefault;
 
                                     service.Update(statusUpdate);
                                 }
+
                             }
+
+
+                            //for (int i = collection.Entities.Count - 1; i >= 0; i--)
+                            //{
+                            //    if (i == collection.Entities.Count - 1)
+                            //    {
+                            //        if (collection.Entities[i].GetAttributeValue<bool>("new_default").Equals(true))
+                            //        {
+                            //            statusDefault = true;
+
+                            //            Entity statusUpdate = new Entity(status.LogicalName);
+                            //            statusUpdate.Id = collection.Entities[i].Id;
+                            //            tracingService.Trace("Record id from if: " + statusUpdate.Id.ToString());
+                            //            statusUpdate["new_default"] = statusDefault;
+
+                            //            service.Update(statusUpdate);
+                            //        }
+                            //        else
+                            //        {
+                            //            statusDefault = false;
+
+                            //            Entity statusUpdate = new Entity(status.LogicalName);
+                            //            statusUpdate.Id = collection.Entities[i].Id;
+                            //            tracingService.Trace("Record id from else: " + statusUpdate.Id.ToString());
+                            //            statusUpdate["new_default"] = statusDefault;
+
+                            //            service.Update(statusUpdate);
+
+                            //            break;
+                            //        }
+                            //    }
+                            //    else
+                            //    {
+                            //        statusDefault = false;
+                            //        Entity statusUpdate = new Entity(status.LogicalName);
+                            //        statusUpdate.Id = collection.Entities[i].Id;
+                            //        tracingService.Trace("Record id from else: " + statusUpdate.Id.ToString());
+                            //        statusUpdate["new_default"] = statusDefault;
+
+                            //        service.Update(statusUpdate);
+                            //    }
+                            //}
                         }
                     }
 
@@ -139,15 +183,15 @@ namespace PluginTasks
                             throw new InvalidPluginExecutionException("No status record found!");
                         }
 
-                        tracingService.Trace(context.Depth.ToString());
-                        //throw new InvalidPluginExecutionException(collection.Entities.Count.ToString());
+                        // Update retrieved records
                         Entity statusUpdate = new Entity(status.LogicalName);
                         
                         foreach (var entity in collection.Entities)
                         {
-                            tracingService.Trace("Default status of id=" + entity.Id + " will be updated to false");
+                            tracingService.Trace("Default status of id=" + entity.Id + " is updated to false");
                             statusUpdate.Id = entity.Id;
                             statusUpdate["new_default"] = false;
+
                             service.Update(statusUpdate);
                         }
                     }
