@@ -29,38 +29,47 @@ namespace MyPluginsCollection
             {
                 // Obtain the target entity from the input parameters.
                 Entity contact = (Entity)context.InputParameters["Target"];
+                Entity preImage = context.PreEntityImages["preImage"];
 
-                Entity contactRecord = service.Retrieve("contact", context.PrimaryEntityId, new ColumnSet(new string[] { "mobilephone" }));
+                var firstName = "";
+                if (contact.Contains("parentcustomerid") && contact["parentcustomerid"] != null)
+                {
+                    firstName = contact.GetAttributeValue<string>("firstname");
+                }
+                else
+                {
+                    firstName = preImage.GetAttributeValue<string>("firstname");
+                }
 
-                string mobile = contactRecord.Contains("mobilephone") ? contactRecord.GetAttributeValue<string>("mobilephone") : "";
+                var mobile = contact.Contains("mobilephone") ? contact.GetAttributeValue<string>("mobilephone") : "";
 
                 Entity contactUpdate = new Entity("contact");
                 contactUpdate.Id = context.PrimaryEntityId;
 
                 if (mobile == "12345")
                 {
-                    contactUpdate["fax"] = mobile;
+                    contactUpdate["fax"] = mobile + "999";
                 }
+
                 service.Update(contactUpdate);
 
                 string fetchXML =
-                    @"<fetch version='1.0' output-format='xml-platform' mapping='logical' distinct='false'>
+                    $@"<fetch version='1.0' output-format='xml-platform' mapping='logical' distinct='false'>
                         <entity name = 'contact' >
                             <attribute name='firstname' />
                             <attribute name = 'mobilephone' />
-                            < attribute name='contactid' />
                             <order attribute = 'firstname' descending='false' />
                             <filter type = 'and' >
-                                <condition attribute = 'parentcustomerid' operator='eq' uiname='Fabrikam, Inc.' uitype='account' value='{0}'/>
+                                <condition attribute = 'firstname' operator='eq' value='{firstName}'/>
                             </filter>
                         </entity>
                     </fetch>";
 
-                string retrieveQuery = string.Format(fetchXML, context.PrimaryEntityId);
+                var retrieveQuery = new FetchExpression(fetchXML);
 
                 try
                 {
-                    EntityCollection result = service.RetrieveMultiple(new FetchExpression(retrieveQuery));
+                    EntityCollection result = service.RetrieveMultiple(retrieveQuery);
 
                     Entity task = new Entity("task");
 
