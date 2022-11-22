@@ -125,7 +125,7 @@ namespace PluginTasks
                                 var createdReference = new EntityReference("team", userOrTeam.Id);
                                 var accessMask = principalAccess.AccessMask;
 
-                                var grantAccessRequest = new GrantAccessRequest
+                                var modifyAccessRequest = new ModifyAccessRequest
                                 {
                                     PrincipalAccess = new PrincipalAccess
                                     {
@@ -140,7 +140,7 @@ namespace PluginTasks
                                 tracingService.Trace(userOrTeamLogicalName);
                                 tracingService.Trace(accessMask.ToString());
 
-                                service.Execute(grantAccessRequest);
+                                service.Execute(modifyAccessRequest);
                             }
 
                             if (userOrTeamLogicalName == "systemuser")
@@ -148,7 +148,7 @@ namespace PluginTasks
                                 var createdReference = new EntityReference("systemuser", userOrTeam.Id);
                                 var accessMask = principalAccess.AccessMask;
 
-                                var grantAccessRequest = new GrantAccessRequest
+                                var modifyAccessRequest = new ModifyAccessRequest
                                 {
                                     PrincipalAccess = new PrincipalAccess
                                     {
@@ -163,7 +163,7 @@ namespace PluginTasks
                                 tracingService.Trace(userOrTeamLogicalName);
                                 tracingService.Trace(accessMask.ToString());
 
-                                service.Execute(grantAccessRequest);
+                                service.Execute(modifyAccessRequest);
                             }
                         }
                     }
