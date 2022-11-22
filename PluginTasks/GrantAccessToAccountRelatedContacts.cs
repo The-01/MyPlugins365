@@ -175,11 +175,47 @@ namespace PluginTasks
 
                         // Obtain the principal access object from the input parameter
                         var revokee = (EntityReference)context.InputParameters["Revokee"];
-                        var revokeeId = revokee.Id;
-                        var revokeeLogicalName = revokee.LogicalName;
 
-                        tracingService.Trace(revokeeId.ToString());
-                        tracingService.Trace(revokeeLogicalName);
+                        // Call GetContacts function to retrieve all account related contacts
+                        EntityCollection contacts = GetContacts(accountRef.Id, service);
+
+                        foreach (var contact in contacts.Entities)
+                        {
+                            Guid contactId = (Guid)contact["contactid"];
+
+                            // Use the logical Name to know whether this is User or Team!
+                            if (revokee.LogicalName == "team")
+                            {
+                                var createdReference = new EntityReference("team", revokee.Id);
+
+                                var revokeAccessRequest = new RevokeAccessRequest
+                                {
+                                    Revokee = createdReference,
+                                    Target = new EntityReference("contact", contactId)
+                                };
+
+                                tracingService.Trace(revokee.Id.ToString());
+                                tracingService.Trace(revokee.LogicalName);
+
+                                service.Execute(revokeAccessRequest);
+                            }
+
+                            if (revokee.LogicalName == "systemuser")
+                            {
+                                var createdReference = new EntityReference("systemuser", revokee.Id);
+
+                                var revokeAccessRequest = new RevokeAccessRequest
+                                {
+                                    Revokee = createdReference,
+                                    Target = new EntityReference("contact", contactId)
+                                };
+
+                                tracingService.Trace(revokee.Id.ToString());
+                                tracingService.Trace(revokee.LogicalName);
+
+                                service.Execute(revokeAccessRequest);
+                            }
+                        }
                     }
                 }
                 catch (FaultException ex)
