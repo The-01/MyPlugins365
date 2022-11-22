@@ -113,7 +113,7 @@ namespace PluginTasks
 
                             service.Update(opportunityUpdate);
                         }
-                        else if (productType == 100000001)
+                        else
                         {
                             QueryExpression query = new QueryExpression("opportunityproduct");
                             query.ColumnSet = new ColumnSet(new string[] { "priceperunit", "quantity", "manualdiscountamount", "tax" });
@@ -121,10 +121,10 @@ namespace PluginTasks
                             query.Criteria.AddCondition("new_producttype", ConditionOperator.Equal, productType);
 
                             EntityCollection collection = service.RetrieveMultiple(query);
-                            if (collection.Entities.Count == 0)
-                            {
-                                throw new InvalidPluginExecutionException("No opportunity product found of type mobile!");
-                            }
+                            //if (collection.Entities.Count == 0)
+                            //{
+                            //    throw new InvalidPluginExecutionException("No opportunity product found of type mobile!");
+                            //}
 
                             foreach (var entity in collection.Entities)
                             {
@@ -167,10 +167,6 @@ namespace PluginTasks
                             tracingService.Trace("Total mobile value after new record is created: " + extendedAmount);
 
                             service.Update(opportunityUpdate);
-                        }
-                        else
-                        {
-                            throw new InvalidPluginExecutionException("Please select valid product type!");
                         }
                     }
 
