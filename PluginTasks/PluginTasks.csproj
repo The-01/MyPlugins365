@@ -142,8 +142,10 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="AssociateAndDisassociate.cs" />
     <Compile Include="CalculateOpportunity.cs" />
     <Compile Include="CalculateTotalSaleAmount.cs" />
+    <Compile Include="CopyAccountAction.cs" />
     <Compile Include="GrantAccessToAccountRelatedContacts.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="SendEmail.cs" />

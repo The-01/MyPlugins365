@@ -30,9 +30,25 @@ namespace MyPluginsCollection
                 // Obtain the target entity from the input parameters.
                 Entity account = service.Retrieve("account", context.PrimaryEntityId, new ColumnSet(new string[] { "name", "emailaddress1", "telephone1" }));
 
-                var accountName = account["name"];
-                var email = account["emailaddress1"];
-                var mobile = account["telephone1"];
+                var accountName = "";
+                var email = "";
+                var mobile = "";
+
+                // Get account name
+                if (account.Contains("name") && account["name"] != null)
+                {
+                    accountName = account["name"].ToString();
+                }
+                // Get email address
+                if (account.Contains("emailaddress1") && account["emailaddress1"] != null)
+                {
+                    email = account["emailaddress1"].ToString();
+                }
+                // Get phone number
+                if (account.Contains("telephone1") && account["telephone1"] != null)
+                {
+                    mobile = account["telephone1"].ToString();
+                }
 
                 try
                 {
@@ -51,8 +67,8 @@ namespace MyPluginsCollection
                     contact["creditonhold"] = true;
                     
 
-                    tracingService.Trace("New contact record created (On create of account record)");
                     service.Create(contact);
+                    tracingService.Trace("New contact record created (On create of account record)");
                 }
                 catch (FaultException ex)
                 {
